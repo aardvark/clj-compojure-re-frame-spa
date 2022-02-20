@@ -10,9 +10,6 @@
    [reitit.frontend.controllers :as rfc]
    [reitit.frontend.easy :as rfe]
 
-   [ajax.core :as ajax]
-   [cognitect.transit :as transit]
-
    [request-server-frontend.events :as events]
    [request-server-frontend.views :as views]
    [request-server-frontend.subs :as subs]))

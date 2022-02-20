@@ -60,15 +60,16 @@
   [requests]
   ;;TODO change `(reduce max ...` logic to the setting atom on ::initialize-db step
   ;; or even move request-id to the db state
-  ((fnil inc 0) (reduce max (map (comp js/parseInt :id) requests))))
+  ((fnil inc 0) (reduce max (map (comp js/parseInt :request/id) requests))))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::add-request
  (fn-traced
-  [db [_ request]]
+  [{:keys [db]} [_ request]]
   (let [all-requests (:requests db)
-        request (assoc request :id (generate-id all-requests))]
-    (update db :requests (fn [old args] (conj old args)) request))))
+        request (assoc request :request/id (generate-id all-requests))]
+    {:db (update db :requests (fn [old args] (conj old args)) request)
+     :fx [[:dispatch [::navigate :request-server-frontend.routes/list]]]})))
 
 
 

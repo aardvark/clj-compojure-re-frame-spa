@@ -70,7 +70,7 @@
                                    )
                  :on-click
                  #(re-frame/dispatch [::events/add-request
-                                      {:title @title :description @description
+                                      #:request{:title @title :description @description
                                        :created-by @created :completed-by @completed
                                        :completed-date @completed-on}])}
         "Submit request"]])))
