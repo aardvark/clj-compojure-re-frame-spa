@@ -23,9 +23,10 @@
                  root-el)))
 
 (defn init []
-  (ajax/GET "/requests"
-    {:response-format :transit
-     :handler #(re-frame/dispatch-sync [::events/initialize-db %])})
-  ;;(re-frame/dispatch-sync [::events/initialize-db])
+  ;;(ajax/GET "/requests"
+  ;;  {:response-format :transit
+  ;;  :handler #(re-frame/dispatch-sync [::events/initial-load-requests %])})
+  (re-frame/dispatch-sync [::events/initial-load])
+  
   (dev-setup)
   (mount-root))

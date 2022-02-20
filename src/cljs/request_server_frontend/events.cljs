@@ -1,16 +1,36 @@
 (ns request-server-frontend.events
   (:require
+   [ajax.core :as ajax]
    [re-frame.core :as re-frame]
    [request-server-frontend.db :as db]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [request-server-frontend.effects :as effects]
-   ))
+   [day8.re-frame.http-fx]
+
+   [request-server-frontend.effects :as effects]))
+
+(re-frame/reg-event-fx
+ ::initial-load
+ (fn-traced
+  [{:keys [db]} [_ _]]
+  {:db db/default-db
+   :fx [[:dispatch [::initial-load-requests]]]}))
+
+(re-frame/reg-event-fx
+ ::initial-load-requests
+ (fn-traced
+  [{:keys [db]} _]
+  {:db db
+   :http-xhrio {:method :get
+                :uri "/requests"
+                :timeout 7000
+                :response-format (ajax/transit-response-format)
+                :on-success [::initial-load-requests-success]
+                :on-failure [::initial-load-requests-failure]}}))
 
 (re-frame/reg-event-db
- ::initialize-db
- (fn-traced 
-  [db [_ requests]]
-   (db/default-db requests)))
+ ::initial-load-requests-success
+ (fn [db [_ regs]]
+   (assoc db :requests regs)))
 
 ;;
 ;; Routing events
@@ -22,7 +42,7 @@
    {::effects/navigate! route}))
 
 (re-frame/reg-event-db
-  ::navigated
+ ::navigated
  (fn [db [_ new-match]]
    (assoc db :current-route new-match)))
 
@@ -32,8 +52,8 @@
 (re-frame/reg-event-db
  ::load-requests
  (fn-traced [db [_ requests]]
-   (println requests)
-   (update db :requests (fn [_ n] n) requests)))
+            (println requests)
+            (update db :requests (fn [_ n] n) requests)))
 
 
 (defn generate-id
