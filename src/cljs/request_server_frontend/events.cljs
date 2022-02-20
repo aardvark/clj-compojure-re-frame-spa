@@ -10,7 +10,6 @@
  ::initialize-db
  (fn-traced 
   [db [_ requests]]
-   (println requests)
    (db/default-db requests)))
 
 ;;

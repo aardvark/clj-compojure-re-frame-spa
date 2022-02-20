@@ -26,9 +26,6 @@
   ([k params query]
    (rfe/href k params query)))
 
-(def t-reader 
-  (transit/reader :json))
-
 (def routes
   ["/"
    [""
