@@ -39,21 +39,21 @@
                 :timeout 7000
                 :format (ajax/transit-request-format)
                 :response-format (ajax/transit-response-format)
-                :on-sucess [::send-request-backend-sucess]
+                :on-success [::send-request-backend-sucess request]
                 ;; TODO handle failure
-                :on-filure [::send-request-backend-failure]}}))
+                :on-failure [::send-request-backend-failure]}}))
 
-(re-frame/reg-event-fx
- ::send-request-backend-failure
- (fn-traced
-  [{:keys [db]} fail]
-  (println fail)))
+(re-frame/reg-event-db
+ ::send-request-backend-sucess
+ (fn [db [_ request]]
+   (update db :requests (fn [old args] (conj old args)) (second request))))
+
 
 
 (re-frame/reg-event-db
  ::initial-load-requests-success
- (fn [db [_ regs]]
-   (assoc db :requests regs)))
+ (fn [db [_ reqs]]
+   (assoc db :requests reqs)))
 
 ;;
 ;; Routing events
@@ -74,9 +74,9 @@
 ;;
 (re-frame/reg-event-db
  ::load-requests
- (fn-traced [db [_ requests]]
-            (println requests)
-            (update db :requests (fn [_ n] n) requests)))
+ (fn-traced 
+   [db [_ requests]]
+   (update db :requests (fn [_ n] n) requests)))
 
 
 (defn generate-id
@@ -91,9 +91,7 @@
   [{:keys [db]} [_ request]]
   (let [all-requests (:requests db)
         request (assoc request :request/id (generate-id all-requests))]
-    {:db (update db :requests (fn [old args] (conj old args)) request)
-     ;; TODO dispatch POST for persistence here
-     :fx [[:dispatch [::send-request-backend request]]
+    {:fx [[:dispatch [::send-request-backend request]]
           [:dispatch [::navigate :request-server-frontend.routes/list]]]})))
 
 

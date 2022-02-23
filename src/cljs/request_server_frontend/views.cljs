@@ -86,7 +86,7 @@
         [:th "Created by"] [:th "Completed by"] [:th "Completed on"]]]
       [:tbody
        (for [request @requests]
-         ^{:key (:id request)} [request-table-item request])]]]))
+         ^{:key (:request/id request)} [request-table-item request])]]]))
 
 
 (defn main-panel

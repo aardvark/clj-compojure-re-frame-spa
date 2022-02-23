@@ -10,7 +10,8 @@
 (re-frame/reg-sub
  ::requests
  (fn [db]
+   (println "Triggered ::requests reg-sub")
    (let [rs (:requests db)]
      (sort-by (fn [r]
-                (.getTime (new js/Date (:completed-on r))))
+                (.getTime (new js/Date (:request/completed-date r))))
               rs))))
