@@ -2,12 +2,13 @@
   (:require [datomic.client.api :as d]))
 
 
-;;{:id "1" :title "Request 1 need something" :description "Request description somewhat long"
-;; :created "Person A" :completed "Person B" :completed-on "2022-02-10"}
+;;{:id "1" :title "TRANSACT 1" :description "Request description somewhat long"
+;; :created "Person A" :completed "Person B" :completed-on "1990-01-01"}
 (def request-schema
   [{:db/ident :request/id
     :db/valueType :db.type/long
     :db/cardinality :db.cardinality/one
+    :db/unique :db.unique/identity
     :db/doc "The id of the request"}
 
    {:db/ident :request/title
@@ -72,8 +73,29 @@
    (map  #(update % :request/completed-date instant->ymd) (initial-load (client))))
   ([client]
    (let [conn (d/connect client {:db-name "requests"})
-         db (d/db conn)]
+         db   (d/db conn)]
      (d/index-pull db pull-by-completed-date))))
+
+(defn add
+  ([request]
+   (add (client) request))
+  ([client request]
+   (let [conn (d/connect client {:db-name "requests"})]
+     (try
+       (d/transact conn {:tx-data [request]})
+       {:sucess true}
+       (catch Exception e {:message (:cognitect.anomalies/message (.getData e))})
+     ))
+  ))
+
+(comment 
+  
+  (add {:request/id 5001 :request/title "5001"
+        :request/description "From api"
+        :request/created-by "Person C" :request/completed-by "Person A"
+        :request/completed-date "ABC"})
+  )
+
 
 (comment
   (initial-load (client))
@@ -93,6 +115,8 @@
   (def conn (d/connect client {:db-name "requests"}))
   (d/transact conn {:tx-data request-schema})
   (d/transact conn {:tx-data request-sample-data})
+
+  (d/delete-database client {:db-name "requests"})
 
   (def db (d/db conn))
   (d/q all-requests-id db)

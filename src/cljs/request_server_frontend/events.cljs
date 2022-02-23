@@ -25,7 +25,30 @@
                 :timeout 7000
                 :response-format (ajax/transit-response-format)
                 :on-success [::initial-load-requests-success]
+                ;; TODO handle failure
                 :on-failure [::initial-load-requests-failure]}}))
+
+(re-frame/reg-event-fx
+ ::send-request-backend
+ (fn-traced 
+  [{:keys [db]} request]
+  {:db db
+   :http-xhrio {:method :post
+                :uri "/request"
+                :params request
+                :timeout 7000
+                :format (ajax/transit-request-format)
+                :response-format (ajax/transit-response-format)
+                :on-sucess [::send-request-backend-sucess]
+                ;; TODO handle failure
+                :on-filure [::send-request-backend-failure]}}))
+
+(re-frame/reg-event-fx
+ ::send-request-backend-failure
+ (fn-traced
+  [{:keys [db]} fail]
+  (println fail)))
+
 
 (re-frame/reg-event-db
  ::initial-load-requests-success
@@ -69,7 +92,9 @@
   (let [all-requests (:requests db)
         request (assoc request :request/id (generate-id all-requests))]
     {:db (update db :requests (fn [old args] (conj old args)) request)
-     :fx [[:dispatch [::navigate :request-server-frontend.routes/list]]]})))
+     ;; TODO dispatch POST for persistence here
+     :fx [[:dispatch [::send-request-backend request]]
+          [:dispatch [::navigate :request-server-frontend.routes/list]]]})))
 
 
 

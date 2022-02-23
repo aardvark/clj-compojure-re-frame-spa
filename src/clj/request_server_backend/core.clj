@@ -1,7 +1,7 @@
 (ns request-server-backend.core
   (:require
    [clojure.java.io :as io]
-   [compojure.core :as compojure :refer [GET]]
+   [compojure.core :as compojure :refer [GET POST]]
    [compojure.route :as route]
 
    [muuntaja.middleware :as middleware]
@@ -12,9 +12,18 @@
   {:status 200
    :body (db/initial-load)})
 
+(defn add-req-handler 
+  [x]
+  {:status 200
+   :body (db/add (update (second (:body-params x))
+                         :request/completed-date
+                         #(clojure.instant/read-instant-date %)
+                         ))})
+
 (compojure/defroutes app
   (GET "/" [] (io/resource "public/index.html"))
   (GET "/requests" []  (middleware/wrap-format handler))
+  (POST "/request" [] (middleware/wrap-format add-req-handler))
   (route/resources "/")   
   (route/not-found "<h1>Page not found</h1>"))
 
