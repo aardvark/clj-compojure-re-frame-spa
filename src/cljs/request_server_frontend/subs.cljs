@@ -12,6 +12,6 @@
  (fn [db]
    (println "Triggered ::requests reg-sub")
    (let [rs (:requests db)]
-     (sort-by (fn [r]
-                (.getTime (new js/Date (:request/completed-date r))))
-              rs))))
+     (vec (sort-by (fn [r]
+                     (.getTime (new js/Date (:request/completed-date r))))
+                   rs)))))

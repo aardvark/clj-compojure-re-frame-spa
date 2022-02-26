@@ -4,7 +4,9 @@
    [reagent.core :as reagent]
    [request-server-frontend.subs :as subs]
    [request-server-frontend.events :as events]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [re-com.core :as re-com]
+   ))
 
 (defn request-table-item
   []
@@ -78,15 +80,22 @@
 (defn request-list
   []
   (let [requests (re-frame/subscribe [::subs/requests])]
-    [:div
-     [:h2]
-     [:table
-      [:thead
-       [:tr [:th "Id"] [:th "Title"] [:th "Description"]
-        [:th "Created by"] [:th "Completed by"] [:th "Completed on"]]]
-      [:tbody
-       (for [request @requests]
-         ^{:key (:request/id request)} [request-table-item request])]]]))
+    [re-com/simple-v-table
+     
+     :model requests
+     :columns [{:id :request/id :header-label "Id" :row-label-fn :request/id :width 100 :height 100}
+               {:id :request/title :header-label "Title" :row-label-fn :request/title :width 250 :height 100}
+               {:id :request/description :header-label "Description" :row-label-fn :request/description :width 250 :height 100}
+               {:id :request/created-by :header-label "Raised by" :row-label-fn :request/created-by :width 100 :height 100}
+               {:id :request/completed-by :header-label "Closed by" :row-label-fn :request/completed-by :width 120 :height 100}
+               {:id :request/completed-date :header-label "Closed date" :row-label-fn :request/completed-date :width 125 :height 100}
+
+               ]
+
+     
+     ]
+    
+    ))
 
 
 (defn main-panel
