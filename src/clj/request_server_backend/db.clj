@@ -1,5 +1,6 @@
 (ns request-server-backend.db
-  (:require [datomic.client.api :as d]))
+  (:require [datomic.client.api :as d]
+            [clojure.java.io :as io]))
 
 
 ;;{:id "1" :title "TRANSACT 1" :description "Request description somewhat long"
@@ -61,20 +62,21 @@
 
 (defn- instant->ymd
   [instant]
-  (.toString
-   (.toLocalDate
-    (java.time.LocalDateTime/ofInstant
-     (java.time.Instant/ofEpochMilli
-      (.getTime instant))
-     (java.time.ZoneId/of "UTC+0")))))
+  (-> instant
+      (.getTime)
+      (java.time.Instant/ofEpochMilli)
+      (java.time.LocalDateTime/ofInstant (java.time.ZoneId/of "UTC+0"))
+      (.toLocalDate)
+      (.toString)))
 
 (defn initial-load
   ([]
-   (map  #(update % :request/completed-date instant->ymd) (initial-load (client))))
+   (initial-load (client)))
   ([client]
    (let [conn (d/connect client {:db-name "requests"})
          db   (d/db conn)]
-     (d/index-pull db pull-by-completed-date))))
+     (map  #(update % :request/completed-date instant->ymd)
+           (d/index-pull db pull-by-completed-date)))))
 
 (defn add
   ([request]

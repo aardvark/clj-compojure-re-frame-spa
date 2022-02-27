@@ -1,0 +1,3 @@
+{:datomic {:server-type :dev-local
+           :storage-dir "C:/Projects/Interview/request-server-frontend/db"
+           :system "requests.dev"}}
